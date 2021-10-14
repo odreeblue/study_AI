@@ -55,7 +55,7 @@ theta_0 = np.array([[np.nan,1,     1,     np.nan], #s0
 [a, b] = theta_0.shape # 열과 행의 개수를 변수 a, b 에 저장
                        # a = 8, b = 4
 
-Q = np.random.rand(a,b) * theta_0 # Generate 8 x 4 random number matrix
+Q = np.random.rand(a,b) * theta_0  * 0.1# Generate 8 x 4 random number matrix
                                   # The reason for element-wise multiplication of theta_0 :
                                   # To give Nan to the action moving in the direction of the wall
 
@@ -72,13 +72,16 @@ v = np.nanmax(Q, axis = 1) # Calculate the maximum value of each state
 is_continue = True
 episode = 1
 
+V = [] # Save State value for each episode
+V.append(np.nanmax(Q,axis = 1)) # Calculation maximum of action value for each state
+
 while is_continue: # Repeat until is_continue becomes False
     print("에피소드 : "+str(episode))
 
     # decrease the value of e little by little
     epsilon = epsilon / 2
 
-    # After Escape the maze with the Sarsa algorithm, store action history and Q in variables
+    # After Escape the maze with the Q_learning algorithm, store action history and Q in variables
     [s_a_history, Q] = f.goal_maze_ret_s_a_Q(Q, epsilon, eta, gamma, pi_0)
 
     # change in state value
@@ -86,7 +89,7 @@ while is_continue: # Repeat until is_continue becomes False
     print(np.sum(np.abs(new_v - v))) # print change in state value
 
     v = new_v
-
+    V.append(v)
     print(" 목표 지점에 이르기까지 걸린 단계 수는" + str(len(s_a_history)-1)+" 단계입니다.")
 
     # Repeat 100 epsiode
@@ -97,16 +100,25 @@ while is_continue: # Repeat until is_continue becomes False
 
 # 에이전트의 이동 과정을 시각화
 from matplotlib import animation
+import matplotlib.cm as cm # color map
 def init():
     #배경 이미지 초기화
     line.set_data([],[])
     return (line,)
 def animate(i):
-    #프레임 단위로 이미지 생성
-    state = s_a_history[i][0] #현재 위치
-    x = (state % 3) + 0.5 # 상태의 x 좌표 : 3으로 나눈 나머지 +0.5
-    y = 2.5 -int(state/3) # y 좌표 : 2.5에서 3으로 나눈 몫을 뺌
-    line.set_data(x,y)
+    # Draw a picture by frame.
+    # Color each column determined by the state value
+
+    line, = ax.plot([0.5], [2.5], marker = "s", color=cm.jet(V[i][0]),markersize=85) #0
+    line, = ax.plot([1.5], [2.5], marker = "s", color=cm.jet(V[i][1]),markersize=85) #1
+    line, = ax.plot([2.5], [2.5], marker = "s", color=cm.jet(V[i][2]),markersize=85) #2
+    line, = ax.plot([0.5], [1.5], marker = "s", color=cm.jet(V[i][3]),markersize=85) #3
+    line, = ax.plot([1.5], [1.5], marker = "s", color=cm.jet(V[i][4]),markersize=85) #4
+    line, = ax.plot([2.5], [1.5], marker = "s", color=cm.jet(V[i][5]),markersize=85) #5
+    line, = ax.plot([0.5], [0.5], marker = "s", color=cm.jet(V[i][6]),markersize=85) #6
+    line, = ax.plot([1.5], [0.5], marker = "s", color=cm.jet(V[i][7]),markersize=85) #7
+    line, = ax.plot([2.5], [0.5], marker = "s", color=cm.jet(1.0),markersize=85) #8
+
     return (line,)
-anim = animation.FuncAnimation(fig,animate,init_func=init,frames=len(s_a_history),interval =200, repeat = False)
+anim = animation.FuncAnimation(fig,animate,init_func=init,frames=len(V),interval =200, repeat = False)
 plt.show()

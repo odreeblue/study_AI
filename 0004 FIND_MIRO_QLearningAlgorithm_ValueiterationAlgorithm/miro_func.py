@@ -54,11 +54,11 @@ def get_s_next(s, a, Q, epsilon, pi_0):
     return s_next
 
 ## modify the action policy function Q with Sarsa Algorithm
-def Sarsa(s, a, r, s_next, a_next, Q, eta, gamma):
+def Q_learning(s, a, r, s_next, a_next, Q, eta, gamma):
     if s_next == 8:
         Q[s, a] = Q[s, a] +eta * (r - Q[s,a])
     else:
-        Q[s, a] = Q[s, a] +eta * (r +gamma*Q[s_next, a_next] - Q[s,a])
+        Q[s, a] = Q[s, a] +eta * (r +gamma*np.nanmax(Q[s_next,:]) - Q[s,a])
     
     return Q
 
@@ -85,7 +85,7 @@ def goal_maze_ret_s_a_Q(Q, epsilon, eta, gamma, pi):
             # Calculate next action(a_next)
 
         # Modify the value function
-        Q = Sarsa(s, a, r, s_next, a_next, Q, eta, gamma)
+        Q = Q_learning(s, a, r, s_next, a_next, Q, eta, gamma)
 
         # End decision
         if s_next == 8: # End if agent reches the target point
